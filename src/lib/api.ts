@@ -1,16 +1,15 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials: true // Add this to handle credentials
+  withCredentials: true
 });
 
-// Request interceptor for adding the auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -22,12 +21,10 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -36,14 +33,13 @@ api.interceptors.response.use(
   }
 );
 
-// Auth API
 export const authAPI = {
   register: (userData: any) => api.post('/auth/register', userData),
   login: (userData: any) => api.post('/auth/login', userData),
-  getCurrentUser: () => api.get('/auth/me')
+  getCurrentUser: () => api.get('/auth/me'),
+  updateProfile: (userData: any) => api.put('/auth/profile', userData)
 };
 
-// Announcements API
 export const announcementsAPI = {
   getAll: () => api.get('/announcements'),
   getById: (id: string) => api.get(`/announcements/${id}`),
@@ -54,7 +50,6 @@ export const announcementsAPI = {
   toggleLike: (id: string) => api.post(`/announcements/${id}/like`)
 };
 
-// Events API
 export const eventsAPI = {
   getAll: () => api.get('/events'),
   getById: (id: string) => api.get(`/events/${id}`),
@@ -66,7 +61,6 @@ export const eventsAPI = {
   addComment: (id: string, text: string) => api.post(`/events/${id}/comments`, { text })
 };
 
-// Resources API
 export const resourcesAPI = {
   getAll: () => api.get('/resources'),
   getById: (id: string) => api.get(`/resources/${id}`),
